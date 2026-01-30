@@ -5,7 +5,7 @@ Run manual verification of claims made in this session.
 ## Usage
 
 ```
-/verify [claim_type]
+/verify-claims:verify [claim_type]
 ```
 
 ## Arguments
@@ -20,9 +20,9 @@ Run manual verification of claims made in this session.
 ## Examples
 
 ```
-/verify          # Verify all claims
-/verify tests    # Only run test verification
-/verify files    # Only check file existence
+/verify-claims:verify          # Verify all claims
+/verify-claims:verify tests    # Only run test verification
+/verify-claims:verify files    # Only check file existence
 ```
 
 ## Behavior
@@ -60,7 +60,7 @@ Override verification commands in `.claude/verify-claims.json`:
 
 **Instructions for Claude:**
 
-When the user invokes `/verify`, perform the following steps:
+When the user invokes `/verify-claims:verify`, perform the following steps:
 
 1. Read the session transcript to get recent assistant messages
 2. Parse those messages for verifiable claims using these patterns:

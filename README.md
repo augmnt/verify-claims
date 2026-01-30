@@ -146,12 +146,12 @@ The plugin auto-detects project type and appropriate commands:
 
 ## Manual Verification
 
-Use the `/verify` command to manually run verifications:
+Use the `/verify-claims:verify` command to manually run verifications:
 
 ```
-/verify          # Verify all claims
-/verify tests    # Only run test verification
-/verify files    # Only check file existence
+/verify-claims:verify          # Verify all claims
+/verify-claims:verify tests    # Only run test verification
+/verify-claims:verify files    # Only check file existence
 ```
 
 ## Session State
