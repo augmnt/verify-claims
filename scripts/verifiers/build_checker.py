@@ -1,11 +1,11 @@
 """Verify build success claims by running builds."""
 
-import json
-import os
+import shlex
 import subprocess
 from typing import Any
 
 from .base import VerificationResult
+from .command_detection import file_exists, read_package_json
 
 
 def detect_build_command(cwd: str) -> tuple[str, str] | None:
@@ -19,46 +19,40 @@ def detect_build_command(cwd: str) -> tuple[str, str] | None:
         Tuple of (command, build_tool_name) or None if not detected
     """
     # Node.js/npm projects
-    pkg_json = os.path.join(cwd, "package.json")
-    if os.path.exists(pkg_json):
-        try:
-            with open(pkg_json) as f:
-                pkg = json.load(f)
-            scripts = pkg.get("scripts", {})
-            if "build" in scripts:
-                return ("npm run build", "npm")
-            if "compile" in scripts:
-                return ("npm run compile", "npm")
-        except (json.JSONDecodeError, OSError):
-            pass
+    pkg = read_package_json(cwd)
+    if pkg:
+        scripts = pkg.get("scripts", {})
+        if "build" in scripts:
+            return ("npm run build", "npm")
+        if "compile" in scripts:
+            return ("npm run compile", "npm")
 
     # TypeScript projects
-    if os.path.exists(os.path.join(cwd, "tsconfig.json")):
+    if file_exists(cwd, "tsconfig.json"):
         return ("npx tsc --noEmit", "typescript")
 
     # Rust projects
-    if os.path.exists(os.path.join(cwd, "Cargo.toml")):
+    if file_exists(cwd, "Cargo.toml"):
         return ("cargo build", "cargo")
 
     # Go projects
-    if os.path.exists(os.path.join(cwd, "go.mod")):
+    if file_exists(cwd, "go.mod"):
         return ("go build ./...", "go")
 
     # Java/Maven projects
-    if os.path.exists(os.path.join(cwd, "pom.xml")):
+    if file_exists(cwd, "pom.xml"):
         return ("mvn compile", "maven")
 
     # Java/Gradle projects
-    if os.path.exists(os.path.join(cwd, "build.gradle")) or \
-       os.path.exists(os.path.join(cwd, "build.gradle.kts")):
+    if file_exists(cwd, "build.gradle", "build.gradle.kts"):
         return ("./gradlew build", "gradle")
 
     # Make projects
-    if os.path.exists(os.path.join(cwd, "Makefile")):
+    if file_exists(cwd, "Makefile"):
         return ("make", "make")
 
     # CMake projects
-    if os.path.exists(os.path.join(cwd, "CMakeLists.txt")):
+    if file_exists(cwd, "CMakeLists.txt"):
         return ("cmake --build .", "cmake")
 
     return None
@@ -97,8 +91,8 @@ def verify_build_success(claim_value: str | None, cwd: str,
 
     try:
         result = subprocess.run(
-            build_command,
-            shell=True,
+            shlex.split(build_command),
+            shell=False,
             cwd=cwd,
             capture_output=True,
             text=True,

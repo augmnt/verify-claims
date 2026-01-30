@@ -1,11 +1,15 @@
 """Verify test passing claims by running tests."""
 
-import json
-import os
+import shlex
 import subprocess
 from typing import Any
 
 from .base import VerificationResult
+from .command_detection import (
+    file_exists,
+    read_package_json,
+    read_pyproject_toml,
+)
 
 
 def detect_test_command(cwd: str) -> tuple[str, str] | None:
@@ -19,62 +23,48 @@ def detect_test_command(cwd: str) -> tuple[str, str] | None:
         Tuple of (command, framework_name) or None if not detected
     """
     # Node.js/npm projects
-    pkg_json = os.path.join(cwd, "package.json")
-    if os.path.exists(pkg_json):
-        try:
-            with open(pkg_json) as f:
-                pkg = json.load(f)
-            scripts = pkg.get("scripts", {})
-            if "test" in scripts:
-                return ("npm test", "npm")
-            if "test:unit" in scripts:
-                return ("npm run test:unit", "npm")
-        except (json.JSONDecodeError, OSError):
-            pass
+    pkg = read_package_json(cwd)
+    if pkg:
+        scripts = pkg.get("scripts", {})
+        if "test" in scripts:
+            return ("npm test", "npm")
+        if "test:unit" in scripts:
+            return ("npm run test:unit", "npm")
 
     # Python projects
-    if os.path.exists(os.path.join(cwd, "pytest.ini")) or \
-       os.path.exists(os.path.join(cwd, "pyproject.toml")) or \
-       os.path.exists(os.path.join(cwd, "setup.py")):
+    if file_exists(cwd, "pytest.ini", "pyproject.toml", "setup.py"):
         # Check for pytest
-        if os.path.exists(os.path.join(cwd, "pytest.ini")):
+        if file_exists(cwd, "pytest.ini"):
             return ("pytest", "pytest")
         # Check pyproject.toml for pytest
-        pyproject = os.path.join(cwd, "pyproject.toml")
-        if os.path.exists(pyproject):
-            try:
-                with open(pyproject) as f:
-                    content = f.read()
-                if "pytest" in content or "[tool.pytest" in content:
-                    return ("pytest", "pytest")
-            except OSError:
-                pass
+        content = read_pyproject_toml(cwd)
+        if content and ("pytest" in content or "[tool.pytest" in content):
+            return ("pytest", "pytest")
         # Default to pytest if tests directory exists
-        if os.path.exists(os.path.join(cwd, "tests")):
+        if file_exists(cwd, "tests"):
             return ("pytest", "pytest")
 
     # Rust projects
-    if os.path.exists(os.path.join(cwd, "Cargo.toml")):
+    if file_exists(cwd, "Cargo.toml"):
         return ("cargo test", "cargo")
 
     # Go projects
-    if os.path.exists(os.path.join(cwd, "go.mod")):
+    if file_exists(cwd, "go.mod"):
         return ("go test ./...", "go")
 
     # Ruby projects
-    if os.path.exists(os.path.join(cwd, "Gemfile")):
-        if os.path.exists(os.path.join(cwd, "spec")):
+    if file_exists(cwd, "Gemfile"):
+        if file_exists(cwd, "spec"):
             return ("bundle exec rspec", "rspec")
-        if os.path.exists(os.path.join(cwd, "test")):
+        if file_exists(cwd, "test"):
             return ("bundle exec rake test", "rake")
 
     # Java/Maven projects
-    if os.path.exists(os.path.join(cwd, "pom.xml")):
+    if file_exists(cwd, "pom.xml"):
         return ("mvn test", "maven")
 
     # Java/Gradle projects
-    if os.path.exists(os.path.join(cwd, "build.gradle")) or \
-       os.path.exists(os.path.join(cwd, "build.gradle.kts")):
+    if file_exists(cwd, "build.gradle", "build.gradle.kts"):
         return ("./gradlew test", "gradle")
 
     return None
@@ -113,8 +103,8 @@ def verify_tests_pass(claim_value: str | None, cwd: str,
 
     try:
         result = subprocess.run(
-            test_command,
-            shell=True,
+            shlex.split(test_command),
+            shell=False,
             cwd=cwd,
             capture_output=True,
             text=True,

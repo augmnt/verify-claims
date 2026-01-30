@@ -31,10 +31,12 @@ dependencies = []
 test = [
     "pytest>=7.0.0",
     "pytest-mock>=3.10.0",
+    "pytest-cov>=4.0.0",
 ]
 dev = [
     "pytest>=7.0.0",
     "pytest-mock>=3.10.0",
+    "pytest-cov>=4.0.0",
     "ruff>=0.1.0",
 ]
 
@@ -53,6 +55,19 @@ testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_functions = ["test_*"]
 addopts = "-v --tb=short"
+
+[tool.coverage.run]
+source = ["scripts"]
+omit = ["scripts/verifiers/test_runner.py"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.:",
+    "raise NotImplementedError",
+]
+fail_under = 70
+show_missing = true
 
 [tool.ruff]
 target-version = "py310"

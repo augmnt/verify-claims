@@ -1,11 +1,15 @@
 """Verify lint clean claims by running linters."""
 
-import json
-import os
+import shlex
 import subprocess
 from typing import Any
 
 from .base import VerificationResult
+from .command_detection import (
+    file_exists,
+    read_package_json,
+    read_pyproject_toml,
+)
 
 
 def detect_lint_command(cwd: str) -> tuple[str, str] | None:
@@ -19,52 +23,39 @@ def detect_lint_command(cwd: str) -> tuple[str, str] | None:
         Tuple of (command, linter_name) or None if not detected
     """
     # Node.js/npm projects
-    pkg_json = os.path.join(cwd, "package.json")
-    if os.path.exists(pkg_json):
-        try:
-            with open(pkg_json) as f:
-                pkg = json.load(f)
-            scripts = pkg.get("scripts", {})
-            if "lint" in scripts:
-                return ("npm run lint", "npm")
-            # Check for eslint config
-            if os.path.exists(os.path.join(cwd, ".eslintrc.js")) or \
-               os.path.exists(os.path.join(cwd, ".eslintrc.json")) or \
-               os.path.exists(os.path.join(cwd, "eslint.config.js")):
-                return ("npx eslint .", "eslint")
-        except (json.JSONDecodeError, OSError):
-            pass
+    pkg = read_package_json(cwd)
+    if pkg:
+        scripts = pkg.get("scripts", {})
+        if "lint" in scripts:
+            return ("npm run lint", "npm")
+        # Check for eslint config
+        if file_exists(cwd, ".eslintrc.js", ".eslintrc.json", "eslint.config.js"):
+            return ("npx eslint .", "eslint")
 
     # Python projects with ruff
-    if os.path.exists(os.path.join(cwd, "ruff.toml")) or \
-       os.path.exists(os.path.join(cwd, ".ruff.toml")):
+    if file_exists(cwd, "ruff.toml", ".ruff.toml"):
         return ("ruff check .", "ruff")
 
     # Python projects - check pyproject.toml for tools
-    pyproject = os.path.join(cwd, "pyproject.toml")
-    if os.path.exists(pyproject):
-        try:
-            with open(pyproject) as f:
-                content = f.read()
-            if "[tool.ruff" in content:
-                return ("ruff check .", "ruff")
-            if "[tool.flake8" in content or "[tool.pylint" in content:
-                return ("flake8 .", "flake8")
-        except OSError:
-            pass
+    content = read_pyproject_toml(cwd)
+    if content:
+        if "[tool.ruff" in content:
+            return ("ruff check .", "ruff")
+        if "[tool.flake8" in content or "[tool.pylint" in content:
+            return ("flake8 .", "flake8")
 
     # Python with pylint or flake8 config
-    if os.path.exists(os.path.join(cwd, ".pylintrc")):
+    if file_exists(cwd, ".pylintrc"):
         return ("pylint **/*.py", "pylint")
-    if os.path.exists(os.path.join(cwd, ".flake8")):
+    if file_exists(cwd, ".flake8"):
         return ("flake8", "flake8")
 
     # Rust projects
-    if os.path.exists(os.path.join(cwd, "Cargo.toml")):
+    if file_exists(cwd, "Cargo.toml"):
         return ("cargo clippy -- -D warnings", "clippy")
 
     # Go projects
-    if os.path.exists(os.path.join(cwd, "go.mod")):
+    if file_exists(cwd, "go.mod"):
         return ("golangci-lint run", "golangci-lint")
 
     return None
@@ -103,8 +94,8 @@ def verify_lint_clean(claim_value: str | None, cwd: str,
 
     try:
         result = subprocess.run(
-            lint_command,
-            shell=True,
+            shlex.split(lint_command),
+            shell=False,
             cwd=cwd,
             capture_output=True,
             text=True,

@@ -127,7 +127,8 @@ class TestVerifyTestsPass:
 
         mock_run.assert_called_once()
         call_args = mock_run.call_args
-        assert call_args[0][0] == "echo 'tests pass'"
+        # Command is now passed as a list via shlex.split() for security
+        assert call_args[0][0] == ["echo", "tests pass"]
 
     def test_handles_test_failure(self, npm_project):
         """Test handling of test failures."""
