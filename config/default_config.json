@@ -1,0 +1,32 @@
+{
+  "verifiers": {
+    "file_created": {
+      "enabled": true
+    },
+    "tests_pass": {
+      "enabled": true,
+      "timeout": 60,
+      "command": null
+    },
+    "lint_clean": {
+      "enabled": true,
+      "timeout": 30,
+      "command": null
+    },
+    "build_success": {
+      "enabled": true,
+      "timeout": 120,
+      "command": null
+    },
+    "bug_fixed": {
+      "enabled": true
+    }
+  },
+  "behavior": {
+    "block_on_failure": true,
+    "max_retries": 3,
+    "confidence_threshold": 0.7,
+    "cleanup_days": 30
+  },
+  "debug": false
+}
