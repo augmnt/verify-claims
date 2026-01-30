@@ -1,10 +1,8 @@
 """Debug logging for verify-claims plugin."""
 
-import os
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
 
 
 class Logger:
@@ -38,7 +36,7 @@ class Logger:
                 log_path = self.LOG_DIR / self.LOG_FILE
                 with open(log_path, 'a') as f:
                     f.write(formatted + "\n")
-            except IOError:
+            except OSError:
                 pass
 
     def debug(self, message: str) -> None:
@@ -60,7 +58,7 @@ class Logger:
 
 
 # Global logger instance
-_logger: Optional[Logger] = None
+_logger: Logger | None = None
 
 
 def get_logger(debug: bool = False) -> Logger:

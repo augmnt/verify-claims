@@ -1,14 +1,13 @@
 """Verifiers for different claim types."""
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 from .base import VerificationResult
-from .file_exists import verify_file_exists
-from .test_runner import verify_tests_pass
-from .lint_checker import verify_lint_clean
 from .build_checker import verify_build_success
+from .file_exists import verify_file_exists
 from .git_diff import verify_changes_made
-
+from .lint_checker import verify_lint_clean
+from .test_runner import verify_tests_pass
 
 # Map claim types to verifier functions
 VERIFIERS = {
@@ -20,8 +19,8 @@ VERIFIERS = {
 }
 
 
-def verify_claim(claim_type: str, claim_value: Optional[str],
-                 cwd: str, config: Dict[str, Any]) -> VerificationResult:
+def verify_claim(claim_type: str, claim_value: str | None,
+                 cwd: str, config: dict[str, Any]) -> VerificationResult:
     """
     Verify a claim using the appropriate verifier.
 

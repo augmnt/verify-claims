@@ -2,13 +2,13 @@
 
 import os
 import subprocess
-from typing import Any, Dict, Optional
+from typing import Any
 
 from .base import VerificationResult
 
 
-def verify_changes_made(claim_value: Optional[str], cwd: str,
-                        config: Dict[str, Any]) -> VerificationResult:
+def verify_changes_made(claim_value: str | None, cwd: str,
+                        config: dict[str, Any]) -> VerificationResult:
     """
     Verify that changes were made to the codebase (for bug fix claims).
 

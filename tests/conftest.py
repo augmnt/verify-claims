@@ -1,7 +1,6 @@
 """Pytest configuration and shared fixtures."""
 
 import json
-import os
 import sys
 import tempfile
 from pathlib import Path

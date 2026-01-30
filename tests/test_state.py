@@ -6,7 +6,6 @@ import time
 from pathlib import Path
 
 import pytest
-
 from utils.state import SessionState, ToolUseRecord, VerificationResult
 
 
@@ -32,7 +31,7 @@ class TestSessionState:
         session_state.stop_hook_active = True
 
         # Read the state file directly
-        with open(session_state.state_file, 'r') as f:
+        with open(session_state.state_file) as f:
             saved_state = json.load(f)
 
         assert saved_state["stop_hook_active"] is True
@@ -135,7 +134,7 @@ class TestSessionState:
         session_state.add_verification_result(result)
 
         # Load state and check
-        with open(session_state.state_file, 'r') as f:
+        with open(session_state.state_file) as f:
             state = json.load(f)
 
         assert len(state["verification_results"]) == 1

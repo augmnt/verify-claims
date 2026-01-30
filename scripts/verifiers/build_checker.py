@@ -3,13 +3,12 @@
 import json
 import os
 import subprocess
-from pathlib import Path
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
 
 from .base import VerificationResult
 
 
-def detect_build_command(cwd: str) -> Optional[Tuple[str, str]]:
+def detect_build_command(cwd: str) -> tuple[str, str] | None:
     """
     Detect the appropriate build command for the project.
 
@@ -23,14 +22,14 @@ def detect_build_command(cwd: str) -> Optional[Tuple[str, str]]:
     pkg_json = os.path.join(cwd, "package.json")
     if os.path.exists(pkg_json):
         try:
-            with open(pkg_json, 'r') as f:
+            with open(pkg_json) as f:
                 pkg = json.load(f)
             scripts = pkg.get("scripts", {})
             if "build" in scripts:
                 return ("npm run build", "npm")
             if "compile" in scripts:
                 return ("npm run compile", "npm")
-        except (json.JSONDecodeError, IOError):
+        except (json.JSONDecodeError, OSError):
             pass
 
     # TypeScript projects
@@ -65,8 +64,8 @@ def detect_build_command(cwd: str) -> Optional[Tuple[str, str]]:
     return None
 
 
-def verify_build_success(claim_value: Optional[str], cwd: str,
-                         config: Dict[str, Any]) -> VerificationResult:
+def verify_build_success(claim_value: str | None, cwd: str,
+                         config: dict[str, Any]) -> VerificationResult:
     """
     Verify that the project builds successfully.
 

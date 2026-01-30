@@ -3,13 +3,12 @@
 import json
 import os
 import subprocess
-from pathlib import Path
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
 
 from .base import VerificationResult
 
 
-def detect_lint_command(cwd: str) -> Optional[Tuple[str, str]]:
+def detect_lint_command(cwd: str) -> tuple[str, str] | None:
     """
     Detect the appropriate lint command for the project.
 
@@ -23,7 +22,7 @@ def detect_lint_command(cwd: str) -> Optional[Tuple[str, str]]:
     pkg_json = os.path.join(cwd, "package.json")
     if os.path.exists(pkg_json):
         try:
-            with open(pkg_json, 'r') as f:
+            with open(pkg_json) as f:
                 pkg = json.load(f)
             scripts = pkg.get("scripts", {})
             if "lint" in scripts:
@@ -33,7 +32,7 @@ def detect_lint_command(cwd: str) -> Optional[Tuple[str, str]]:
                os.path.exists(os.path.join(cwd, ".eslintrc.json")) or \
                os.path.exists(os.path.join(cwd, "eslint.config.js")):
                 return ("npx eslint .", "eslint")
-        except (json.JSONDecodeError, IOError):
+        except (json.JSONDecodeError, OSError):
             pass
 
     # Python projects with ruff
@@ -45,13 +44,13 @@ def detect_lint_command(cwd: str) -> Optional[Tuple[str, str]]:
     pyproject = os.path.join(cwd, "pyproject.toml")
     if os.path.exists(pyproject):
         try:
-            with open(pyproject, 'r') as f:
+            with open(pyproject) as f:
                 content = f.read()
             if "[tool.ruff" in content:
                 return ("ruff check .", "ruff")
             if "[tool.flake8" in content or "[tool.pylint" in content:
                 return ("flake8 .", "flake8")
-        except IOError:
+        except OSError:
             pass
 
     # Python with pylint or flake8 config
@@ -71,8 +70,8 @@ def detect_lint_command(cwd: str) -> Optional[Tuple[str, str]]:
     return None
 
 
-def verify_lint_clean(claim_value: Optional[str], cwd: str,
-                      config: Dict[str, Any]) -> VerificationResult:
+def verify_lint_clean(claim_value: str | None, cwd: str,
+                      config: dict[str, Any]) -> VerificationResult:
     """
     Verify that linting passes with no errors.
 

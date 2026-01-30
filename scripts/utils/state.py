@@ -3,9 +3,9 @@
 import json
 import os
 import time
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 @dataclass
@@ -13,7 +13,7 @@ class ToolUseRecord:
     """Record of a tool use during the session."""
     tool_name: str
     timestamp: float
-    details: Dict[str, Any] = field(default_factory=dict)
+    details: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -24,7 +24,7 @@ class VerificationResult:
     passed: bool
     message: str
     timestamp: float
-    details: Dict[str, Any] = field(default_factory=dict)
+    details: dict[str, Any] = field(default_factory=dict)
 
 
 class SessionState:
@@ -38,13 +38,13 @@ class SessionState:
         self.state_file = self.STATE_DIR / f"{self.STATE_PREFIX}{session_id}.json"
         self._state = self._load_or_create()
 
-    def _load_or_create(self) -> Dict[str, Any]:
+    def _load_or_create(self) -> dict[str, Any]:
         """Load existing state or create new."""
         if self.state_file.exists():
             try:
-                with open(self.state_file, 'r') as f:
+                with open(self.state_file) as f:
                     return json.load(f)
-            except (json.JSONDecodeError, IOError):
+            except (json.JSONDecodeError, OSError):
                 pass
 
         return {
@@ -111,11 +111,11 @@ class SessionState:
         self._state["verification_results"].append(asdict(result))
         self._save()
 
-    def get_files_written(self) -> List[Dict[str, Any]]:
+    def get_files_written(self) -> list[dict[str, Any]]:
         """Get all files written this session."""
         return self._state.get("files_written", [])
 
-    def get_commands_run(self) -> List[Dict[str, Any]]:
+    def get_commands_run(self) -> list[dict[str, Any]]:
         """Get all commands run this session."""
         return self._state.get("commands_run", [])
 
@@ -127,21 +127,21 @@ class SessionState:
                 return True
         return False
 
-    def last_test_passed(self) -> Optional[bool]:
+    def last_test_passed(self) -> bool | None:
         """Check if the last test command passed."""
         for cmd in reversed(self._state.get("commands_run", [])):
             if cmd.get("is_test"):
                 return cmd.get("exit_code") == 0
         return None
 
-    def last_lint_passed(self) -> Optional[bool]:
+    def last_lint_passed(self) -> bool | None:
         """Check if the last lint command passed."""
         for cmd in reversed(self._state.get("commands_run", [])):
             if cmd.get("is_lint"):
                 return cmd.get("exit_code") == 0
         return None
 
-    def last_build_passed(self) -> Optional[bool]:
+    def last_build_passed(self) -> bool | None:
         """Check if the last build command passed."""
         for cmd in reversed(self._state.get("commands_run", [])):
             if cmd.get("is_build"):
@@ -164,7 +164,7 @@ class SessionState:
                 if now - mtime > max_age_seconds:
                     state_file.unlink()
                     removed += 1
-            except (IOError, OSError):
+            except OSError:
                 pass
 
         return removed

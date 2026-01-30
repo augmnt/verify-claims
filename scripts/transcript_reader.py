@@ -1,11 +1,12 @@
 """Read and parse Claude Code transcript JSONL files."""
 
 import json
+from collections.abc import Generator
 from pathlib import Path
-from typing import Any, Dict, Generator, List, Optional
+from typing import Any
 
 
-def read_transcript(transcript_path: str) -> Generator[Dict[str, Any], None, None]:
+def read_transcript(transcript_path: str) -> Generator[dict[str, Any], None, None]:
     """
     Read a transcript JSONL file and yield each message.
 
@@ -19,7 +20,7 @@ def read_transcript(transcript_path: str) -> Generator[Dict[str, Any], None, Non
     if not path.exists():
         return
 
-    with open(path, 'r', encoding='utf-8') as f:
+    with open(path, encoding='utf-8') as f:
         for line in f:
             line = line.strip()
             if not line:
@@ -30,7 +31,7 @@ def read_transcript(transcript_path: str) -> Generator[Dict[str, Any], None, Non
                 continue
 
 
-def get_last_assistant_messages(transcript_path: str, count: int = 3) -> List[Dict[str, Any]]:
+def get_last_assistant_messages(transcript_path: str, count: int = 3) -> list[dict[str, Any]]:
     """
     Get the last N assistant messages from the transcript.
 
@@ -51,7 +52,7 @@ def get_last_assistant_messages(transcript_path: str, count: int = 3) -> List[Di
     return assistant_messages[-count:] if len(assistant_messages) >= count else assistant_messages
 
 
-def extract_assistant_text(message: Dict[str, Any]) -> str:
+def extract_assistant_text(message: dict[str, Any]) -> str:
     """
     Extract text content from an assistant message.
 

@@ -7,21 +7,20 @@ what files have been created and what commands have been run.
 """
 
 import json
-import os
 import re
 import sys
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 # Add scripts directory to path for imports
 script_dir = Path(__file__).parent
 sys.path.insert(0, str(script_dir))
 
-from utils.state import SessionState
-from utils.logger import get_logger
+from utils.logger import get_logger  # noqa: E402
+from utils.state import SessionState  # noqa: E402
 
 
-def read_hook_input() -> Dict[str, Any]:
+def read_hook_input() -> dict[str, Any]:
     """Read the hook input from stdin."""
     try:
         input_data = sys.stdin.read()

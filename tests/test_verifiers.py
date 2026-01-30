@@ -1,18 +1,15 @@
 """Tests for verifiers."""
 
 import json
-import os
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
-import pytest
-
-from verifiers import verify_claim, VerificationResult
-from verifiers.file_exists import verify_file_exists
-from verifiers.test_runner import detect_test_command, verify_tests_pass
-from verifiers.lint_checker import detect_lint_command, verify_lint_clean
+from verifiers import verify_claim
 from verifiers.build_checker import detect_build_command, verify_build_success
+from verifiers.file_exists import verify_file_exists
 from verifiers.git_diff import verify_changes_made
+from verifiers.lint_checker import detect_lint_command, verify_lint_clean
+from verifiers.test_runner import detect_test_command, verify_tests_pass
 
 
 class TestVerifyFileExists:
@@ -126,7 +123,7 @@ class TestVerifyTestsPass:
 
         with patch('verifiers.test_runner.subprocess.run') as mock_run:
             mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
-            result = verify_tests_pass(None, temp_project_dir, config)
+            verify_tests_pass(None, temp_project_dir, config)
 
         mock_run.assert_called_once()
         call_args = mock_run.call_args

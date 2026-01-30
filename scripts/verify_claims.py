@@ -11,21 +11,22 @@ import os
 import sys
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 # Add scripts directory to path for imports
 script_dir = Path(__file__).parent
 sys.path.insert(0, str(script_dir))
 
-from claim_parser import Claim, parse_claims, get_claim_summary
-from transcript_reader import get_recent_assistant_text
-from utils.config import load_config, get_config_value
-from utils.state import SessionState, VerificationResult as StateVerificationResult
-from utils.logger import get_logger
-from verifiers import verify_claim, VerificationResult
+from claim_parser import parse_claims  # noqa: E402
+from transcript_reader import get_recent_assistant_text  # noqa: E402
+from utils.config import get_config_value, load_config  # noqa: E402
+from utils.logger import get_logger  # noqa: E402
+from utils.state import SessionState  # noqa: E402
+from utils.state import VerificationResult as StateVerificationResult  # noqa: E402
+from verifiers import verify_claim  # noqa: E402
 
 
-def read_hook_input() -> Dict[str, Any]:
+def read_hook_input() -> dict[str, Any]:
     """Read the hook input from stdin."""
     try:
         input_data = sys.stdin.read()
@@ -114,8 +115,8 @@ def main() -> int:
         logger.info(f"Found {len(claims)} claims to verify")
 
         # Verify each claim
-        failed_claims: List[Dict[str, Any]] = []
-        passed_claims: List[Dict[str, Any]] = []
+        failed_claims: list[dict[str, Any]] = []
+        passed_claims: list[dict[str, Any]] = []
 
         for claim in claims:
             logger.debug(f"Verifying claim: {claim.claim_type} - {claim.claim_text}")

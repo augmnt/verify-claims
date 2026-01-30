@@ -3,13 +3,12 @@
 import json
 import os
 import subprocess
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 from .base import VerificationResult
 
 
-def detect_test_command(cwd: str) -> Optional[Tuple[str, str]]:
+def detect_test_command(cwd: str) -> tuple[str, str] | None:
     """
     Detect the appropriate test command for the project.
 
@@ -23,14 +22,14 @@ def detect_test_command(cwd: str) -> Optional[Tuple[str, str]]:
     pkg_json = os.path.join(cwd, "package.json")
     if os.path.exists(pkg_json):
         try:
-            with open(pkg_json, 'r') as f:
+            with open(pkg_json) as f:
                 pkg = json.load(f)
             scripts = pkg.get("scripts", {})
             if "test" in scripts:
                 return ("npm test", "npm")
             if "test:unit" in scripts:
                 return ("npm run test:unit", "npm")
-        except (json.JSONDecodeError, IOError):
+        except (json.JSONDecodeError, OSError):
             pass
 
     # Python projects
@@ -44,11 +43,11 @@ def detect_test_command(cwd: str) -> Optional[Tuple[str, str]]:
         pyproject = os.path.join(cwd, "pyproject.toml")
         if os.path.exists(pyproject):
             try:
-                with open(pyproject, 'r') as f:
+                with open(pyproject) as f:
                     content = f.read()
                 if "pytest" in content or "[tool.pytest" in content:
                     return ("pytest", "pytest")
-            except IOError:
+            except OSError:
                 pass
         # Default to pytest if tests directory exists
         if os.path.exists(os.path.join(cwd, "tests")):
@@ -81,8 +80,8 @@ def detect_test_command(cwd: str) -> Optional[Tuple[str, str]]:
     return None
 
 
-def verify_tests_pass(claim_value: Optional[str], cwd: str,
-                      config: Dict[str, Any]) -> VerificationResult:
+def verify_tests_pass(claim_value: str | None, cwd: str,
+                      config: dict[str, Any]) -> VerificationResult:
     """
     Verify that tests pass by running the test suite.
 

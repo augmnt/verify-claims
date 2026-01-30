@@ -1,8 +1,6 @@
 """Tests for claim_parser.py"""
 
-import pytest
-
-from claim_parser import Claim, parse_claims, extract_file_paths, get_claim_summary
+from claim_parser import Claim, extract_file_paths, get_claim_summary, parse_claims
 
 
 class TestParseClaims:

@@ -1,14 +1,13 @@
 """Verify file creation claims."""
 
 import os
-from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 from .base import VerificationResult
 
 
-def verify_file_exists(file_path: Optional[str], cwd: str,
-                       config: Dict[str, Any]) -> VerificationResult:
+def verify_file_exists(file_path: str | None, cwd: str,
+                       config: dict[str, Any]) -> VerificationResult:
     """
     Verify that a claimed file was actually created.
 

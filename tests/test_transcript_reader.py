@@ -1,16 +1,13 @@
 """Tests for transcript_reader.py"""
 
 import json
-import tempfile
 from pathlib import Path
 
-import pytest
-
 from transcript_reader import (
-    read_transcript,
-    get_last_assistant_messages,
     extract_assistant_text,
+    get_last_assistant_messages,
     get_recent_assistant_text,
+    read_transcript,
 )
 
 

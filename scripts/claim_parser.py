@@ -2,7 +2,6 @@
 
 import re
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Tuple
 
 
 @dataclass
@@ -11,12 +10,12 @@ class Claim:
     claim_type: str
     claim_text: str
     confidence: float
-    extracted_value: Optional[str] = None  # e.g., file path for file_created
+    extracted_value: str | None = None  # e.g., file path for file_created
 
 
 # Claim detection patterns with confidence weights
 # Note: For file_created patterns, we search on original text to preserve paths
-CLAIM_PATTERNS: Dict[str, List[Tuple[str, float]]] = {
+CLAIM_PATTERNS: dict[str, list[tuple[str, float]]] = {
     "file_created": [
         # High confidence - explicit creation statements
         (r"(?:I've |I have |I )?(?:created|wrote|added|generated) (?:a )?(?:new )?(?:the )?(?:file )?(?:called |named )?[`'\"]?([^\s`'\",:]+\.[a-zA-Z0-9]+)[`'\"]?", 0.9),
@@ -65,7 +64,7 @@ CLAIM_PATTERNS: Dict[str, List[Tuple[str, float]]] = {
 }
 
 
-def parse_claims(text: str, confidence_threshold: float = 0.7) -> List[Claim]:
+def parse_claims(text: str, confidence_threshold: float = 0.7) -> list[Claim]:
     """
     Parse text for claims that can be verified.
 
@@ -118,7 +117,7 @@ def parse_claims(text: str, confidence_threshold: float = 0.7) -> List[Claim]:
     return claims
 
 
-def extract_file_paths(text: str) -> List[str]:
+def extract_file_paths(text: str) -> list[str]:
     """
     Extract file paths mentioned in text.
 
@@ -160,7 +159,7 @@ def extract_file_paths(text: str) -> List[str]:
     return unique_paths
 
 
-def get_claim_summary(claims: List[Claim]) -> Dict[str, List[str]]:
+def get_claim_summary(claims: list[Claim]) -> dict[str, list[str]]:
     """
     Summarize claims by type.
 
@@ -170,7 +169,7 @@ def get_claim_summary(claims: List[Claim]) -> Dict[str, List[str]]:
     Returns:
         Dictionary mapping claim types to extracted values or claim texts
     """
-    summary: Dict[str, List[str]] = {}
+    summary: dict[str, list[str]] = {}
 
     for claim in claims:
         if claim.claim_type not in summary:

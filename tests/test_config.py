@@ -3,9 +3,7 @@
 import json
 from pathlib import Path
 
-import pytest
-
-from utils.config import load_config, deep_merge, get_config_value
+from utils.config import deep_merge, get_config_value, load_config
 
 
 class TestDeepMerge:
