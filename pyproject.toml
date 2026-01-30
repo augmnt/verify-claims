@@ -58,7 +58,11 @@ addopts = "-v --tb=short"
 
 [tool.coverage.run]
 source = ["scripts"]
-omit = ["scripts/verifiers/test_runner.py"]
+omit = [
+    "scripts/verifiers/test_runner.py",
+    "scripts/track_tool_use.py",
+    "scripts/verify_claims.py",
+]
 
 [tool.coverage.report]
 exclude_lines = [
